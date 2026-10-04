@@ -1,0 +1,26 @@
+{
+  "$schema": "https://static.modelcontextprotocol.io/schemas/2025-12-11/server.schema.json",
+  "name": "io.github.app-kit-dev/mcp",
+  "title": "App-Kit MCP",
+  "description": "SEO audit, text readability and grammar check, image compression (WebP/AVIF), PDF to images.",
+  "version": "0.1.0",
+  "websiteUrl": "https://app-kit.dev/mcp",
+  "repository": {
+    "url": "https://github.com/app-kit-dev/mcp",
+    "source": "github"
+  },
+  "remotes": [
+    {
+      "type": "streamable-http",
+      "url": "https://mcp.app-kit.dev/mcp",
+      "headers": [
+        {
+          "name": "Authorization",
+          "description": "Optional. Free token from https://app-kit.dev/mcp for higher limits, as 'Bearer mcpf_...'.",
+          "isRequired": false,
+          "isSecret": true
+        }
+      ]
+    }
+  ]
+}

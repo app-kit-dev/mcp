@@ -1,0 +1,8 @@
+blank_issues_enabled: false
+contact_links:
+  - name: Security report
+    url: mailto:hello@app-kit.dev
+    about: Report vulnerabilities privately, not as an issue.
+  - name: Free token and docs
+    url: https://app-kit.dev/mcp
+    about: Get a free token and see current limits.

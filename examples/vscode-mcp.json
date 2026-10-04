@@ -1,0 +1,19 @@
+{
+  "inputs": [
+    {
+      "type": "promptString",
+      "id": "app-kit-token",
+      "description": "App-Kit MCP free token (mcpf_...) from https://app-kit.dev/mcp",
+      "password": true
+    }
+  ],
+  "servers": {
+    "app-kit": {
+      "type": "http",
+      "url": "https://mcp.app-kit.dev/mcp",
+      "headers": {
+        "Authorization": "Bearer ${input:app-kit-token}"
+      }
+    }
+  }
+}

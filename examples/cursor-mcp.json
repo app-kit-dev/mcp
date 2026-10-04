@@ -1,0 +1,10 @@
+{
+  "mcpServers": {
+    "app-kit": {
+      "url": "https://mcp.app-kit.dev/mcp",
+      "headers": {
+        "Authorization": "Bearer mcpf_your_token"
+      }
+    }
+  }
+}
