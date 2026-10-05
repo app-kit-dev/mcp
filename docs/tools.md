@@ -11,11 +11,13 @@ Source: `tools/list` of `https://mcp.app-kit.dev/mcp`. Tool descriptions are ret
 | [`text_check`](#text_check) | Проверка текста (App-Kit) | yes |
 | [`seo_audit_fast`](#seo_audit_fast) | Быстрый SEO-аудит (App-Kit) | yes |
 | [`seo_audit_status`](#seo_audit_status) | Статус SEO-аудита (App-Kit) | yes |
+| [`pdf_to_images`](#pdf_to_images) | PDF → картинки (App-Kit) | yes |
+| [`images_to_pdf`](#images_to_pdf) | Картинки → PDF (App-Kit) | yes |
+| [`image_convert`](#image_convert) | Конвертация картинки (App-Kit) | yes |
+| [`conversion_status`](#conversion_status) | Статус конвертации (App-Kit) | yes |
+| [`create_upload`](#create_upload) | Загрузка файла (App-Kit) | yes |
 | [`quota_status`](#quota_status) | Лимиты App-Kit MCP | yes |
 | `image_compress` (planned) | Compress image to WebP/AVIF | yes |
-| `image_convert` (planned) | Convert image format | yes |
-| `pdf_to_images` (planned) | PDF to images | yes |
-| `create_upload` (planned) | Create a one-time upload URL | yes |
 
 ## `text_check`
 
@@ -1116,6 +1118,1365 @@ Source: `tools/list` of `https://mcp.app-kit.dev/mcp`. Tool descriptions are ret
 
 </details>
 
+## `pdf_to_images`
+
+**Title:** PDF → картинки (App-Kit)  
+**Annotations:** `readOnlyHint=true`, `destructiveHint=false`, `idempotentHint=false`, `openWorldHint=true`
+
+```text
+Конвертировать PDF в картинки (по странице на файл): format png/jpeg/webp, dpi 72–300,
+first_page/last_page. PDF до 20 МБ и до 20 страниц.
+Вход — ровно один: source_url (публичный URL, шлюз скачает сам), upload_id (create_upload → PUT) или data_base64 (до 512 КБ).
+Результат — ссылки на скачивание (resource_link, действуют 10 мин; когда скачаны все файлы задания, они удаляются) и превью первой картинки. Если за 60 с не готово — status=running и handle: зовите conversion_status(handle).
+Бесплатно: 3 в час анонимно, 10 в час с бесплатным токеном (остаток — quota_status).
+```
+
+### Input
+
+| Argument | Type | Required | Description |
+|---|---|---|---|
+| `source_url` | `string` | no | Публичный URL файла (шлюз скачает сам). Основной путь для Claude.ai |
+| `upload_id` | `string` | no | upload_id из create_upload (после PUT файла) |
+| `data_base64` | `string` | no | Файл в base64 — только для маленьких файлов (до 512 КБ) |
+| `format` | `png` / `jpeg` / `webp` | no | Формат страниц |
+| `dpi` | `integer` | no | Разрешение 72–300 |
+| `first_page` | `integer` | no | Первая страница (с 1) |
+| `last_page` | `integer` | no | Последняя страница |
+
+<details><summary>Input JSON Schema</summary>
+
+```json
+{
+  "properties": {
+    "source_url": {
+      "anyOf": [
+        {
+          "type": "string"
+        },
+        {
+          "type": "null"
+        }
+      ],
+      "default": null,
+      "description": "Публичный URL файла (шлюз скачает сам). Основной путь для Claude.ai",
+      "title": "Source Url"
+    },
+    "upload_id": {
+      "anyOf": [
+        {
+          "type": "string"
+        },
+        {
+          "type": "null"
+        }
+      ],
+      "default": null,
+      "description": "upload_id из create_upload (после PUT файла)",
+      "title": "Upload Id"
+    },
+    "data_base64": {
+      "anyOf": [
+        {
+          "type": "string"
+        },
+        {
+          "type": "null"
+        }
+      ],
+      "default": null,
+      "description": "Файл в base64 — только для маленьких файлов (до 512 КБ)",
+      "title": "Data Base64"
+    },
+    "format": {
+      "default": "png",
+      "description": "Формат страниц",
+      "enum": [
+        "png",
+        "jpeg",
+        "webp"
+      ],
+      "title": "Format",
+      "type": "string"
+    },
+    "dpi": {
+      "default": 150,
+      "description": "Разрешение 72–300",
+      "maximum": 300,
+      "minimum": 72,
+      "title": "Dpi",
+      "type": "integer"
+    },
+    "first_page": {
+      "anyOf": [
+        {
+          "minimum": 1,
+          "type": "integer"
+        },
+        {
+          "type": "null"
+        }
+      ],
+      "default": null,
+      "description": "Первая страница (с 1)",
+      "title": "First Page"
+    },
+    "last_page": {
+      "anyOf": [
+        {
+          "minimum": 1,
+          "type": "integer"
+        },
+        {
+          "type": "null"
+        }
+      ],
+      "default": null,
+      "description": "Последняя страница",
+      "title": "Last Page"
+    }
+  },
+  "type": "object",
+  "title": "pdf_to_imagesArguments"
+}
+```
+
+</details>
+
+### Output (`structuredContent`)
+
+<details><summary>Output JSON Schema</summary>
+
+```json
+{
+  "properties": {
+    "status": {
+      "enum": [
+        "done",
+        "running"
+      ],
+      "title": "Status",
+      "type": "string"
+    },
+    "tool": {
+      "title": "Tool",
+      "type": "string"
+    },
+    "handle": {
+      "anyOf": [
+        {
+          "type": "string"
+        },
+        {
+          "type": "null"
+        }
+      ],
+      "default": null,
+      "description": "Передайте в conversion_status, пока status=running",
+      "title": "Handle"
+    },
+    "poll_after_s": {
+      "anyOf": [
+        {
+          "type": "integer"
+        },
+        {
+          "type": "null"
+        }
+      ],
+      "default": null,
+      "title": "Poll After S"
+    },
+    "pages": {
+      "anyOf": [
+        {
+          "type": "integer"
+        },
+        {
+          "type": "null"
+        }
+      ],
+      "default": null,
+      "description": "Число выходных файлов/страниц",
+      "title": "Pages"
+    },
+    "files": {
+      "items": {
+        "$ref": "#/$defs/OutFile"
+      },
+      "title": "Files",
+      "type": "array"
+    },
+    "bytes_out": {
+      "anyOf": [
+        {
+          "type": "integer"
+        },
+        {
+          "type": "null"
+        }
+      ],
+      "default": null,
+      "title": "Bytes Out"
+    },
+    "expires_at": {
+      "anyOf": [
+        {
+          "type": "string"
+        },
+        {
+          "type": "null"
+        }
+      ],
+      "default": null,
+      "description": "До какого момента действуют ссылки (UTC)",
+      "title": "Expires At"
+    },
+    "quota": {
+      "$ref": "#/$defs/Quota"
+    }
+  },
+  "required": [
+    "status",
+    "tool",
+    "quota"
+  ],
+  "type": "object",
+  "$defs": {
+    "OutFile": {
+      "properties": {
+        "n": {
+          "description": "Номер выхода с 1 (страница/файл)",
+          "title": "N",
+          "type": "integer"
+        },
+        "url": {
+          "description": "Ссылка на скачивание (действует до expires_at; после скачивания файлы удаляются)",
+          "title": "Url",
+          "type": "string"
+        },
+        "content_type": {
+          "title": "Content Type",
+          "type": "string"
+        },
+        "filename": {
+          "title": "Filename",
+          "type": "string"
+        },
+        "bytes": {
+          "anyOf": [
+            {
+              "type": "integer"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "title": "Bytes"
+        }
+      },
+      "required": [
+        "n",
+        "url",
+        "content_type",
+        "filename"
+      ],
+      "title": "OutFile",
+      "type": "object"
+    },
+    "Quota": {
+      "properties": {
+        "remaining": {
+          "anyOf": [
+            {
+              "type": "integer"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "description": "Сколько вызовов осталось в самом узком окне; null — без лимита",
+          "title": "Remaining"
+        },
+        "reset_at": {
+          "anyOf": [
+            {
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "description": "Когда окно сбросится (UTC, ISO 8601)",
+          "title": "Reset At"
+        },
+        "tier": {
+          "description": "Уровень доступа: L0 аноним, L1 бесплатный токен, L3 ключ API",
+          "title": "Tier",
+          "type": "string"
+        },
+        "upgrade_url": {
+          "description": "Где получить бесплатный токен или ключ",
+          "title": "Upgrade Url",
+          "type": "string"
+        },
+        "domain_remaining": {
+          "anyOf": [
+            {
+              "type": "integer"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "description": "Сколько аудитов этого домена осталось на сутки (только seo-audit); null — не применимо",
+          "title": "Domain Remaining"
+        }
+      },
+      "required": [
+        "remaining",
+        "reset_at",
+        "tier",
+        "upgrade_url"
+      ],
+      "title": "Quota",
+      "type": "object"
+    }
+  },
+  "title": "ConversionOut"
+}
+```
+
+</details>
+
+## `images_to_pdf`
+
+**Title:** Картинки → PDF (App-Kit)  
+**Annotations:** `readOnlyHint=true`, `destructiveHint=false`, `idempotentHint=false`, `openWorldHint=true`
+
+```text
+Собрать картинки в один PDF (по картинке на страницу), page_size A4/Letter или по размеру картинки.
+Вход: source_urls[] или upload_ids[] — до 20 файлов, каждый до 20 МБ.
+Результат — ссылки на скачивание (resource_link, действуют 10 мин; когда скачаны все файлы задания, они удаляются) и превью первой картинки. Если за 60 с не готово — status=running и handle: зовите conversion_status(handle).
+Бесплатно: 3 в час анонимно, 10 в час с бесплатным токеном (остаток — quota_status).
+```
+
+### Input
+
+| Argument | Type | Required | Description |
+|---|---|---|---|
+| `source_urls` | array of `string` | no | Публичные URL картинок, по порядку страниц |
+| `upload_ids` | array of `string` | no | upload_id картинок из create_upload, по порядку |
+| `page_size` | `A4` / `Letter` | no | Размер страницы; не задан — по размеру картинки |
+
+<details><summary>Input JSON Schema</summary>
+
+```json
+{
+  "properties": {
+    "source_urls": {
+      "anyOf": [
+        {
+          "items": {
+            "type": "string"
+          },
+          "type": "array"
+        },
+        {
+          "type": "null"
+        }
+      ],
+      "default": null,
+      "description": "Публичные URL картинок, по порядку страниц",
+      "title": "Source Urls"
+    },
+    "upload_ids": {
+      "anyOf": [
+        {
+          "items": {
+            "type": "string"
+          },
+          "type": "array"
+        },
+        {
+          "type": "null"
+        }
+      ],
+      "default": null,
+      "description": "upload_id картинок из create_upload, по порядку",
+      "title": "Upload Ids"
+    },
+    "page_size": {
+      "anyOf": [
+        {
+          "enum": [
+            "A4",
+            "Letter"
+          ],
+          "type": "string"
+        },
+        {
+          "type": "null"
+        }
+      ],
+      "default": null,
+      "description": "Размер страницы; не задан — по размеру картинки",
+      "title": "Page Size"
+    }
+  },
+  "type": "object",
+  "title": "images_to_pdfArguments"
+}
+```
+
+</details>
+
+### Output (`structuredContent`)
+
+<details><summary>Output JSON Schema</summary>
+
+```json
+{
+  "properties": {
+    "status": {
+      "enum": [
+        "done",
+        "running"
+      ],
+      "title": "Status",
+      "type": "string"
+    },
+    "tool": {
+      "title": "Tool",
+      "type": "string"
+    },
+    "handle": {
+      "anyOf": [
+        {
+          "type": "string"
+        },
+        {
+          "type": "null"
+        }
+      ],
+      "default": null,
+      "description": "Передайте в conversion_status, пока status=running",
+      "title": "Handle"
+    },
+    "poll_after_s": {
+      "anyOf": [
+        {
+          "type": "integer"
+        },
+        {
+          "type": "null"
+        }
+      ],
+      "default": null,
+      "title": "Poll After S"
+    },
+    "pages": {
+      "anyOf": [
+        {
+          "type": "integer"
+        },
+        {
+          "type": "null"
+        }
+      ],
+      "default": null,
+      "description": "Число выходных файлов/страниц",
+      "title": "Pages"
+    },
+    "files": {
+      "items": {
+        "$ref": "#/$defs/OutFile"
+      },
+      "title": "Files",
+      "type": "array"
+    },
+    "bytes_out": {
+      "anyOf": [
+        {
+          "type": "integer"
+        },
+        {
+          "type": "null"
+        }
+      ],
+      "default": null,
+      "title": "Bytes Out"
+    },
+    "expires_at": {
+      "anyOf": [
+        {
+          "type": "string"
+        },
+        {
+          "type": "null"
+        }
+      ],
+      "default": null,
+      "description": "До какого момента действуют ссылки (UTC)",
+      "title": "Expires At"
+    },
+    "quota": {
+      "$ref": "#/$defs/Quota"
+    }
+  },
+  "required": [
+    "status",
+    "tool",
+    "quota"
+  ],
+  "type": "object",
+  "$defs": {
+    "OutFile": {
+      "properties": {
+        "n": {
+          "description": "Номер выхода с 1 (страница/файл)",
+          "title": "N",
+          "type": "integer"
+        },
+        "url": {
+          "description": "Ссылка на скачивание (действует до expires_at; после скачивания файлы удаляются)",
+          "title": "Url",
+          "type": "string"
+        },
+        "content_type": {
+          "title": "Content Type",
+          "type": "string"
+        },
+        "filename": {
+          "title": "Filename",
+          "type": "string"
+        },
+        "bytes": {
+          "anyOf": [
+            {
+              "type": "integer"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "title": "Bytes"
+        }
+      },
+      "required": [
+        "n",
+        "url",
+        "content_type",
+        "filename"
+      ],
+      "title": "OutFile",
+      "type": "object"
+    },
+    "Quota": {
+      "properties": {
+        "remaining": {
+          "anyOf": [
+            {
+              "type": "integer"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "description": "Сколько вызовов осталось в самом узком окне; null — без лимита",
+          "title": "Remaining"
+        },
+        "reset_at": {
+          "anyOf": [
+            {
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "description": "Когда окно сбросится (UTC, ISO 8601)",
+          "title": "Reset At"
+        },
+        "tier": {
+          "description": "Уровень доступа: L0 аноним, L1 бесплатный токен, L3 ключ API",
+          "title": "Tier",
+          "type": "string"
+        },
+        "upgrade_url": {
+          "description": "Где получить бесплатный токен или ключ",
+          "title": "Upgrade Url",
+          "type": "string"
+        },
+        "domain_remaining": {
+          "anyOf": [
+            {
+              "type": "integer"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "description": "Сколько аудитов этого домена осталось на сутки (только seo-audit); null — не применимо",
+          "title": "Domain Remaining"
+        }
+      },
+      "required": [
+        "remaining",
+        "reset_at",
+        "tier",
+        "upgrade_url"
+      ],
+      "title": "Quota",
+      "type": "object"
+    }
+  },
+  "title": "ConversionOut"
+}
+```
+
+</details>
+
+## `image_convert`
+
+**Title:** Конвертация картинки (App-Kit)  
+**Annotations:** `readOnlyHint=true`, `destructiveHint=false`, `idempotentHint=false`, `openWorldHint=true`
+
+```text
+Сменить формат картинки: target_format png/jpeg/webp/bmp/tiff/gif, quality 1–100, max_dim
+(уменьшить длинную сторону). Файл до 20 МБ. Для avif и максимального сжатия — image_compress.
+Вход — ровно один: source_url (публичный URL, шлюз скачает сам), upload_id (create_upload → PUT) или data_base64 (до 512 КБ).
+Результат — ссылки на скачивание (resource_link, действуют 10 мин; когда скачаны все файлы задания, они удаляются) и превью первой картинки. Если за 60 с не готово — status=running и handle: зовите conversion_status(handle).
+Бесплатно: 5 в час анонимно, 20 в час с бесплатным токеном (остаток — quota_status).
+```
+
+### Input
+
+| Argument | Type | Required | Description |
+|---|---|---|---|
+| `target_format` | `png` / `jpeg` / `webp` / `bmp` / `tiff` / `gif` | yes | Целевой формат |
+| `source_url` | `string` | no | Публичный URL файла (шлюз скачает сам). Основной путь для Claude.ai |
+| `upload_id` | `string` | no | upload_id из create_upload (после PUT файла) |
+| `data_base64` | `string` | no | Файл в base64 — только для маленьких файлов (до 512 КБ) |
+| `quality` | `integer` | no | Качество 1–100 (jpeg/webp) |
+| `max_dim` | `integer` | no | Уменьшить длинную сторону до N px |
+
+<details><summary>Input JSON Schema</summary>
+
+```json
+{
+  "properties": {
+    "target_format": {
+      "description": "Целевой формат",
+      "enum": [
+        "png",
+        "jpeg",
+        "webp",
+        "bmp",
+        "tiff",
+        "gif"
+      ],
+      "title": "Target Format",
+      "type": "string"
+    },
+    "source_url": {
+      "anyOf": [
+        {
+          "type": "string"
+        },
+        {
+          "type": "null"
+        }
+      ],
+      "default": null,
+      "description": "Публичный URL файла (шлюз скачает сам). Основной путь для Claude.ai",
+      "title": "Source Url"
+    },
+    "upload_id": {
+      "anyOf": [
+        {
+          "type": "string"
+        },
+        {
+          "type": "null"
+        }
+      ],
+      "default": null,
+      "description": "upload_id из create_upload (после PUT файла)",
+      "title": "Upload Id"
+    },
+    "data_base64": {
+      "anyOf": [
+        {
+          "type": "string"
+        },
+        {
+          "type": "null"
+        }
+      ],
+      "default": null,
+      "description": "Файл в base64 — только для маленьких файлов (до 512 КБ)",
+      "title": "Data Base64"
+    },
+    "quality": {
+      "default": 90,
+      "description": "Качество 1–100 (jpeg/webp)",
+      "maximum": 100,
+      "minimum": 1,
+      "title": "Quality",
+      "type": "integer"
+    },
+    "max_dim": {
+      "anyOf": [
+        {
+          "maximum": 10000,
+          "minimum": 16,
+          "type": "integer"
+        },
+        {
+          "type": "null"
+        }
+      ],
+      "default": null,
+      "description": "Уменьшить длинную сторону до N px",
+      "title": "Max Dim"
+    }
+  },
+  "required": [
+    "target_format"
+  ],
+  "type": "object",
+  "title": "image_convertArguments"
+}
+```
+
+</details>
+
+### Output (`structuredContent`)
+
+<details><summary>Output JSON Schema</summary>
+
+```json
+{
+  "properties": {
+    "status": {
+      "enum": [
+        "done",
+        "running"
+      ],
+      "title": "Status",
+      "type": "string"
+    },
+    "tool": {
+      "title": "Tool",
+      "type": "string"
+    },
+    "handle": {
+      "anyOf": [
+        {
+          "type": "string"
+        },
+        {
+          "type": "null"
+        }
+      ],
+      "default": null,
+      "description": "Передайте в conversion_status, пока status=running",
+      "title": "Handle"
+    },
+    "poll_after_s": {
+      "anyOf": [
+        {
+          "type": "integer"
+        },
+        {
+          "type": "null"
+        }
+      ],
+      "default": null,
+      "title": "Poll After S"
+    },
+    "pages": {
+      "anyOf": [
+        {
+          "type": "integer"
+        },
+        {
+          "type": "null"
+        }
+      ],
+      "default": null,
+      "description": "Число выходных файлов/страниц",
+      "title": "Pages"
+    },
+    "files": {
+      "items": {
+        "$ref": "#/$defs/OutFile"
+      },
+      "title": "Files",
+      "type": "array"
+    },
+    "bytes_out": {
+      "anyOf": [
+        {
+          "type": "integer"
+        },
+        {
+          "type": "null"
+        }
+      ],
+      "default": null,
+      "title": "Bytes Out"
+    },
+    "expires_at": {
+      "anyOf": [
+        {
+          "type": "string"
+        },
+        {
+          "type": "null"
+        }
+      ],
+      "default": null,
+      "description": "До какого момента действуют ссылки (UTC)",
+      "title": "Expires At"
+    },
+    "quota": {
+      "$ref": "#/$defs/Quota"
+    }
+  },
+  "required": [
+    "status",
+    "tool",
+    "quota"
+  ],
+  "type": "object",
+  "$defs": {
+    "OutFile": {
+      "properties": {
+        "n": {
+          "description": "Номер выхода с 1 (страница/файл)",
+          "title": "N",
+          "type": "integer"
+        },
+        "url": {
+          "description": "Ссылка на скачивание (действует до expires_at; после скачивания файлы удаляются)",
+          "title": "Url",
+          "type": "string"
+        },
+        "content_type": {
+          "title": "Content Type",
+          "type": "string"
+        },
+        "filename": {
+          "title": "Filename",
+          "type": "string"
+        },
+        "bytes": {
+          "anyOf": [
+            {
+              "type": "integer"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "title": "Bytes"
+        }
+      },
+      "required": [
+        "n",
+        "url",
+        "content_type",
+        "filename"
+      ],
+      "title": "OutFile",
+      "type": "object"
+    },
+    "Quota": {
+      "properties": {
+        "remaining": {
+          "anyOf": [
+            {
+              "type": "integer"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "description": "Сколько вызовов осталось в самом узком окне; null — без лимита",
+          "title": "Remaining"
+        },
+        "reset_at": {
+          "anyOf": [
+            {
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "description": "Когда окно сбросится (UTC, ISO 8601)",
+          "title": "Reset At"
+        },
+        "tier": {
+          "description": "Уровень доступа: L0 аноним, L1 бесплатный токен, L3 ключ API",
+          "title": "Tier",
+          "type": "string"
+        },
+        "upgrade_url": {
+          "description": "Где получить бесплатный токен или ключ",
+          "title": "Upgrade Url",
+          "type": "string"
+        },
+        "domain_remaining": {
+          "anyOf": [
+            {
+              "type": "integer"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "description": "Сколько аудитов этого домена осталось на сутки (только seo-audit); null — не применимо",
+          "title": "Domain Remaining"
+        }
+      },
+      "required": [
+        "remaining",
+        "reset_at",
+        "tier",
+        "upgrade_url"
+      ],
+      "title": "Quota",
+      "type": "object"
+    }
+  },
+  "title": "ConversionOut"
+}
+```
+
+</details>
+
+## `conversion_status`
+
+**Title:** Статус конвертации (App-Kit)  
+**Annotations:** `readOnlyHint=true`, `destructiveHint=false`, `idempotentHint=true`, `openWorldHint=false`
+
+```text
+Статус и результат конвертации по handle из pdf_to_images / images_to_pdf / image_convert.
+Бесплатно, квоту не тратит. Пока status=running — повторите через poll_after_s секунд.
+handle действует 1 час и только для того, кто запустил конвертацию.
+```
+
+### Input
+
+| Argument | Type | Required | Description |
+|---|---|---|---|
+| `handle` | `string` | yes | handle из pdf_to_images / images_to_pdf / image_convert |
+
+<details><summary>Input JSON Schema</summary>
+
+```json
+{
+  "properties": {
+    "handle": {
+      "description": "handle из pdf_to_images / images_to_pdf / image_convert",
+      "title": "Handle",
+      "type": "string"
+    }
+  },
+  "required": [
+    "handle"
+  ],
+  "type": "object",
+  "title": "conversion_statusArguments"
+}
+```
+
+</details>
+
+### Output (`structuredContent`)
+
+<details><summary>Output JSON Schema</summary>
+
+```json
+{
+  "properties": {
+    "status": {
+      "enum": [
+        "done",
+        "running"
+      ],
+      "title": "Status",
+      "type": "string"
+    },
+    "tool": {
+      "title": "Tool",
+      "type": "string"
+    },
+    "handle": {
+      "anyOf": [
+        {
+          "type": "string"
+        },
+        {
+          "type": "null"
+        }
+      ],
+      "default": null,
+      "description": "Передайте в conversion_status, пока status=running",
+      "title": "Handle"
+    },
+    "poll_after_s": {
+      "anyOf": [
+        {
+          "type": "integer"
+        },
+        {
+          "type": "null"
+        }
+      ],
+      "default": null,
+      "title": "Poll After S"
+    },
+    "pages": {
+      "anyOf": [
+        {
+          "type": "integer"
+        },
+        {
+          "type": "null"
+        }
+      ],
+      "default": null,
+      "description": "Число выходных файлов/страниц",
+      "title": "Pages"
+    },
+    "files": {
+      "items": {
+        "$ref": "#/$defs/OutFile"
+      },
+      "title": "Files",
+      "type": "array"
+    },
+    "bytes_out": {
+      "anyOf": [
+        {
+          "type": "integer"
+        },
+        {
+          "type": "null"
+        }
+      ],
+      "default": null,
+      "title": "Bytes Out"
+    },
+    "expires_at": {
+      "anyOf": [
+        {
+          "type": "string"
+        },
+        {
+          "type": "null"
+        }
+      ],
+      "default": null,
+      "description": "До какого момента действуют ссылки (UTC)",
+      "title": "Expires At"
+    },
+    "quota": {
+      "$ref": "#/$defs/Quota"
+    }
+  },
+  "required": [
+    "status",
+    "tool",
+    "quota"
+  ],
+  "type": "object",
+  "$defs": {
+    "OutFile": {
+      "properties": {
+        "n": {
+          "description": "Номер выхода с 1 (страница/файл)",
+          "title": "N",
+          "type": "integer"
+        },
+        "url": {
+          "description": "Ссылка на скачивание (действует до expires_at; после скачивания файлы удаляются)",
+          "title": "Url",
+          "type": "string"
+        },
+        "content_type": {
+          "title": "Content Type",
+          "type": "string"
+        },
+        "filename": {
+          "title": "Filename",
+          "type": "string"
+        },
+        "bytes": {
+          "anyOf": [
+            {
+              "type": "integer"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "title": "Bytes"
+        }
+      },
+      "required": [
+        "n",
+        "url",
+        "content_type",
+        "filename"
+      ],
+      "title": "OutFile",
+      "type": "object"
+    },
+    "Quota": {
+      "properties": {
+        "remaining": {
+          "anyOf": [
+            {
+              "type": "integer"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "description": "Сколько вызовов осталось в самом узком окне; null — без лимита",
+          "title": "Remaining"
+        },
+        "reset_at": {
+          "anyOf": [
+            {
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "description": "Когда окно сбросится (UTC, ISO 8601)",
+          "title": "Reset At"
+        },
+        "tier": {
+          "description": "Уровень доступа: L0 аноним, L1 бесплатный токен, L3 ключ API",
+          "title": "Tier",
+          "type": "string"
+        },
+        "upgrade_url": {
+          "description": "Где получить бесплатный токен или ключ",
+          "title": "Upgrade Url",
+          "type": "string"
+        },
+        "domain_remaining": {
+          "anyOf": [
+            {
+              "type": "integer"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "description": "Сколько аудитов этого домена осталось на сутки (только seo-audit); null — не применимо",
+          "title": "Domain Remaining"
+        }
+      },
+      "required": [
+        "remaining",
+        "reset_at",
+        "tier",
+        "upgrade_url"
+      ],
+      "title": "Quota",
+      "type": "object"
+    }
+  },
+  "title": "ConversionOut"
+}
+```
+
+</details>
+
+## `create_upload`
+
+**Title:** Загрузка файла (App-Kit)  
+**Annotations:** `readOnlyHint=true`, `destructiveHint=false`, `idempotentHint=false`, `openWorldHint=false`
+
+```text
+Создать одноразовую ссылку загрузки файла (для клиентов с доступом к локальным файлам: Claude Code, Cursor).
+
+Вернёт upload_id, put_url и команду curl: загрузите файл одним PUT (до 20 МБ,
+за 10 мин), затем передайте upload_id в файловый tool. Один upload_id — один вызов.
+Файл с публичного адреса передавайте сразу как source_url, без загрузки.
+Бесплатно: 10 в час анонимно, 30 в час с бесплатным токеном.
+```
+
+### Input
+
+| Argument | Type | Required | Description |
+|---|---|---|---|
+| `filename` | `string` | yes | Имя файла, например report.pdf |
+| `size` | `integer` | yes | Размер файла в байтах |
+| `content_type` | `string` | no | MIME-тип, например application/pdf или image/png |
+
+<details><summary>Input JSON Schema</summary>
+
+```json
+{
+  "properties": {
+    "filename": {
+      "description": "Имя файла, например report.pdf",
+      "maxLength": 200,
+      "title": "Filename",
+      "type": "string"
+    },
+    "size": {
+      "description": "Размер файла в байтах",
+      "exclusiveMinimum": 0,
+      "title": "Size",
+      "type": "integer"
+    },
+    "content_type": {
+      "default": "application/octet-stream",
+      "description": "MIME-тип, например application/pdf или image/png",
+      "title": "Content Type",
+      "type": "string"
+    }
+  },
+  "required": [
+    "filename",
+    "size"
+  ],
+  "type": "object",
+  "title": "create_uploadArguments"
+}
+```
+
+</details>
+
+### Output (`structuredContent`)
+
+<details><summary>Output JSON Schema</summary>
+
+```json
+{
+  "properties": {
+    "upload_id": {
+      "description": "Передайте в pdf_to_images / images_to_pdf / image_convert / image_compress",
+      "title": "Upload Id",
+      "type": "string"
+    },
+    "put_url": {
+      "description": "Куда загрузить файл одним PUT (тело — сырые байты файла)",
+      "title": "Put Url",
+      "type": "string"
+    },
+    "expires_at": {
+      "description": "До какого момента нужно загрузить и использовать файл (UTC)",
+      "title": "Expires At",
+      "type": "string"
+    },
+    "max_bytes": {
+      "title": "Max Bytes",
+      "type": "integer"
+    },
+    "curl": {
+      "description": "Готовая команда загрузки",
+      "title": "Curl",
+      "type": "string"
+    },
+    "quota": {
+      "$ref": "#/$defs/Quota"
+    }
+  },
+  "required": [
+    "upload_id",
+    "put_url",
+    "expires_at",
+    "max_bytes",
+    "curl",
+    "quota"
+  ],
+  "type": "object",
+  "$defs": {
+    "Quota": {
+      "properties": {
+        "remaining": {
+          "anyOf": [
+            {
+              "type": "integer"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "description": "Сколько вызовов осталось в самом узком окне; null — без лимита",
+          "title": "Remaining"
+        },
+        "reset_at": {
+          "anyOf": [
+            {
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "description": "Когда окно сбросится (UTC, ISO 8601)",
+          "title": "Reset At"
+        },
+        "tier": {
+          "description": "Уровень доступа: L0 аноним, L1 бесплатный токен, L3 ключ API",
+          "title": "Tier",
+          "type": "string"
+        },
+        "upgrade_url": {
+          "description": "Где получить бесплатный токен или ключ",
+          "title": "Upgrade Url",
+          "type": "string"
+        },
+        "domain_remaining": {
+          "anyOf": [
+            {
+              "type": "integer"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "description": "Сколько аудитов этого домена осталось на сутки (только seo-audit); null — не применимо",
+          "title": "Domain Remaining"
+        }
+      },
+      "required": [
+        "remaining",
+        "reset_at",
+        "tier",
+        "upgrade_url"
+      ],
+      "title": "Quota",
+      "type": "object"
+    }
+  },
+  "title": "CreateUploadOut"
+}
+```
+
+</details>
+
 ## `quota_status`
 
 **Title:** Лимиты App-Kit MCP  
@@ -1314,27 +2675,3 @@ Compress and resize an image into WebP or AVIF.
 - **Input:** one of `source_url` (public URL), `upload_id` (from `create_upload`) or `data_base64` (up to 512 KB); `format` webp/avif, `quality`, `width`, `height`, `preset`, `lossless`.
 - **Output:** `resource_link` to the result (signed, 10 min), `original_size`, `converted_size`, `compression_ratio`, `width`, `height`, `quota`.
 - **Free limits:** 5/hour anonymous, 20/hour with a free token.
-
-### `image_convert`
-
-Convert an image between PNG, JPEG, WebP, BMP, TIFF and GIF, optionally capping the longest side.
-
-- **Input:** `source_url` / `upload_id` / `data_base64`; `target_format` png/jpeg/webp/bmp/tiff/gif, `quality`, `max_dim`.
-- **Output:** `files[]` with `resource_link`, a small preview image, `quota`.
-- **Free limits:** 5/hour anonymous, 20/hour with a free token.
-
-### `pdf_to_images`
-
-Render PDF pages to PNG, JPEG or WebP (up to 20 pages, up to 20 MB).
-
-- **Input:** `source_url` / `upload_id` / `data_base64`; `dpi` 72-300, `format` png/jpeg/webp, `first_page`, `last_page`.
-- **Output:** `pages`, `files[{n, resource_link, bytes}]`, preview of page 1, `expires_at`; or a `handle` for long jobs.
-- **Free limits:** 3/hour anonymous, 10/hour with a free token.
-
-### `create_upload`
-
-Get a one-time `PUT` URL to upload a local file (agents with a shell: Claude Code, Cursor, VS Code).
-
-- **Input:** `filename`, `content_type`, `size` (up to 20 MB).
-- **Output:** `upload_id`, `put_url` (valid 10 min), `expires_at`, a ready-to-run curl command.
-- **Free limits:** 10/hour anonymous, 30/hour with a free token.

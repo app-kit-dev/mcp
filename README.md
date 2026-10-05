@@ -5,8 +5,8 @@
 [![Free tier](https://img.shields.io/badge/free%20tier-no%20sign--up-2ea44f)](https://app-kit.dev/mcp)
 [![License: MIT](https://img.shields.io/badge/license-MIT-blue)](LICENSE)
 
-Remote MCP server for **SEO audits**, **text readability and grammar checks**, **image compression
-(WebP/AVIF)** and **PDF to images** - for Claude, Cursor, VS Code, Windsurf and any other MCP client.
+Remote MCP server for **SEO audits**, **text readability and grammar checks**, **image conversion
+(PNG/JPEG/WebP)** and **PDF to images** - for Claude, Cursor, VS Code, Windsurf and any other MCP client.
 Free tier with daily limits, no sign-up.
 
 ```
@@ -26,8 +26,8 @@ itself is a hosted service operated by [App-Kit](https://app-kit.dev); there is 
 - **Text check** - readability, "water" and keyword stuffing metrics, stop phrases and grammar
   (LanguageTool) for Russian and English, up to 20 000 characters. Returns positions of issues,
   not copies of your text.
-- **Image compression and conversion** *(rolling out)* - WebP/AVIF compression, format conversion,
-  PDF pages to PNG/JPEG/WebP. Files are passed by URL or via a one-time upload link, never as huge
+- **PDF and images** - PDF pages to PNG/JPEG/WebP, images to PDF, format conversion
+  (WebP/AVIF compression is coming soon). Files are passed by URL or via a one-time upload link, never as huge
   base64 strings in the chat.
 
 ## Quick start
@@ -122,10 +122,12 @@ Full descriptions and JSON Schemas: [docs/tools.md](docs/tools.md) (generated fr
 | `seo_audit_status` | Status and result of an audit by `handle` | (called by the model automatically) |
 | `text_check` | Readability, water/spam metrics, stop phrases, grammar; `lang` ru/en, up to 20 000 chars | "Check this landing page copy for readability and grammar: ..." |
 | `quota_status` | Your access level and remaining free calls per tool | "How many free App-Kit checks do I have left today?" |
-| `image_compress` *(rolling out)* | Compress to WebP/AVIF with quality and resize options | "Compress https://example.com/hero.png to AVIF, max width 1600" |
-| `image_convert` *(rolling out)* | Convert between PNG, JPEG, WebP, BMP, TIFF, GIF | "Convert this logo to PNG: https://example.com/logo.webp" |
-| `pdf_to_images` *(rolling out)* | Render PDF pages (up to 20) to PNG/JPEG/WebP | "Turn pages 1-3 of https://example.com/deck.pdf into PNG at 150 dpi" |
-| `create_upload` *(rolling out)* | One-time upload URL for a local file (agents with a shell) | "Compress ./assets/banner.jpg to WebP" |
+| `image_convert` | Convert between PNG, JPEG, WebP, BMP, TIFF, GIF | "Convert this logo to PNG: https://example.com/logo.webp" |
+| `pdf_to_images` | Render PDF pages (up to 20) to PNG/JPEG/WebP | "Turn pages 1-3 of https://example.com/deck.pdf into PNG at 150 dpi" |
+| `images_to_pdf` | Merge up to 20 images into one PDF | "Make a PDF from these 3 screenshots: ..." |
+| `conversion_status` | Status and result of a long conversion by `handle` | (called by the model automatically) |
+| `create_upload` | One-time upload URL for a local file (agents with a shell) | "Convert ./scan.pdf to PNG pages" |
+| `image_compress` *(coming soon)* | Compress to WebP/AVIF with quality and resize options | "Compress https://example.com/hero.png to AVIF" |
 
 All tools are read-only: nothing is published or changed on your side. Results that are files come
 back as short-lived download links (10 minutes) plus a small preview.
@@ -136,10 +138,10 @@ back as short-lived download links (10 minutes) plus a small preview.
 |---|---|---|---|
 | `text_check` | 10 / hour | 20 / hour | |
 | `seo_audit_fast` | 5 / hour | 10 / hour | one domain: up to 20 audits per day from all users |
-| `seo_audit_status`, `quota_status` | free | free | do not spend quota |
-| `image_compress`, `image_convert` | 5 / hour | 20 / hour | rolling out |
-| `pdf_to_images` | 3 / hour | 10 / hour | rolling out; up to 20 pages, 20 MB |
-| `create_upload` | 10 / hour | 30 / hour | rolling out; up to 20 MB, link valid 10 min |
+| `seo_audit_status`, `conversion_status`, `quota_status` | free | free | do not spend quota |
+| `image_convert` | 5 / hour | 20 / hour | |
+| `pdf_to_images`, `images_to_pdf` | 3 / hour | 10 / hour | up to 20 pages / files, 20 MB |
+| `create_upload` | 10 / hour | 30 / hour | up to 20 MB, link valid 10 min |
 
 Every response includes `quota` (`remaining`, `reset_at`, `tier`, `upgrade_url`). The free tier
 also has a shared daily budget per tool; when it runs out, the tool says so and resets at 00:00 UTC.
