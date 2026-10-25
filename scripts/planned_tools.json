@@ -5,7 +5,7 @@
     "summary": "Compress and resize an image into WebP or AVIF.",
     "input": "one of `source_url` (public URL), `upload_id` (from `create_upload`) or `data_base64` (up to 512 KB); `format` webp/avif, `quality`, `width`, `height`, `preset`, `lossless`.",
     "output": "`resource_link` to the result (signed, 10 min), `original_size`, `converted_size`, `compression_ratio`, `width`, `height`, `quota`.",
-    "limits": "5/hour anonymous, 20/hour with a free token."
+    "limits": "Rate-limited per day; see https://app-kit.dev/mcp."
   },
   {
     "name": "image_convert",
@@ -13,7 +13,7 @@
     "summary": "Convert an image between PNG, JPEG, WebP, BMP, TIFF and GIF, optionally capping the longest side.",
     "input": "`source_url` / `upload_id` / `data_base64`; `target_format` png/jpeg/webp/bmp/tiff/gif, `quality`, `max_dim`.",
     "output": "`files[]` with `resource_link`, a small preview image, `quota`.",
-    "limits": "5/hour anonymous, 20/hour with a free token."
+    "limits": "Rate-limited per day; see https://app-kit.dev/mcp."
   },
   {
     "name": "pdf_to_images",
@@ -21,7 +21,7 @@
     "summary": "Render PDF pages to PNG, JPEG or WebP (up to 20 pages, up to 20 MB).",
     "input": "`source_url` / `upload_id` / `data_base64`; `dpi` 72-300, `format` png/jpeg/webp, `first_page`, `last_page`.",
     "output": "`pages`, `files[{n, resource_link, bytes}]`, preview of page 1, `expires_at`; or a `handle` for long jobs.",
-    "limits": "3/hour anonymous, 10/hour with a free token."
+    "limits": "Rate-limited per day; see https://app-kit.dev/mcp."
   },
   {
     "name": "create_upload",
@@ -29,6 +29,6 @@
     "summary": "Get a one-time `PUT` URL to upload a local file (agents with a shell: Claude Code, Cursor, VS Code).",
     "input": "`filename`, `content_type`, `size` (up to 20 MB).",
     "output": "`upload_id`, `put_url` (valid 10 min), `expires_at`, a ready-to-run curl command.",
-    "limits": "10/hour anonymous, 30/hour with a free token."
+    "limits": "Rate-limited per day; see https://app-kit.dev/mcp."
   }
 ]
