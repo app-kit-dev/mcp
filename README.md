@@ -28,7 +28,7 @@ itself is a hosted service operated by [App-Kit](https://app-kit.dev); there is 
   (LanguageTool) for Russian and English, up to 20 000 characters. Returns positions of issues,
   not copies of your text.
 - **PDF and images** - PDF pages to PNG/JPEG/WebP, images to PDF, format conversion
-  (WebP/AVIF compression is coming soon). Files are passed by URL or via a one-time upload link, never as huge
+  and WebP/AVIF compression. Files are passed by URL or via a one-time upload link, never as huge
   base64 strings in the chat.
 
 ## Quick start
@@ -179,7 +179,7 @@ Full descriptions and JSON Schemas: [docs/tools.md](docs/tools.md) (generated fr
 | `images_to_pdf` | Merge up to 20 images into one PDF | "Make a PDF from these 3 screenshots: ..." |
 | `conversion_status` | Status and result of a long conversion by `handle` | (called by the model automatically) |
 | `create_upload` | One-time upload URL for a local file (agents with a shell) | "Convert ./scan.pdf to PNG pages" |
-| `image_compress` *(coming soon)* | Compress to WebP/AVIF with quality and resize options | "Compress https://example.com/hero.png to AVIF" |
+| `image_compress` | Compress to WebP/AVIF with quality and resize options | "Compress https://example.com/hero.png to AVIF" |
 
 All tools are read-only: nothing is published or changed on your side. Results that are files come
 back as short-lived download links (10 minutes) plus a small preview.

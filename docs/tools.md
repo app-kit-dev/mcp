@@ -17,7 +17,7 @@ usage tiers and daily limits: https://app-kit.dev/mcp.
 | [`conversion_status`](#conversion_status) | App-Kit conversion status | yes |
 | [`create_upload`](#create_upload) | App-Kit file upload | no |
 | [`quota_status`](#quota_status) | App-Kit usage limits | yes |
-| `image_compress` (planned) | Compress image to WebP/AVIF | yes |
+| `image_compress` | Compress image to WebP/AVIF | yes |
 
 ## `text_check`
 
