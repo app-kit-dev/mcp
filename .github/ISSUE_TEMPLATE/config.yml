@@ -1,7 +1,7 @@
 blank_issues_enabled: false
 contact_links:
   - name: Security report
-    url: mailto:hello@app-kit.dev
+    url: mailto:hi@wm2.dev
     about: Report vulnerabilities privately, not as an issue.
   - name: Free token and docs
     url: https://app-kit.dev/mcp

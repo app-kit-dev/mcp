@@ -1,6 +1,6 @@
 # Security policy
 
-Please report vulnerabilities privately to **hello@app-kit.dev** with "Security: App-Kit MCP" in
+Please report vulnerabilities privately to **hi@wm2.dev** with "Security: App-Kit MCP" in
 the subject. Do not open a public issue for security problems.
 
 Include what you found, how to reproduce it and the impact you expect. We reply within 3 business
