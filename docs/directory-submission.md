@@ -2,7 +2,7 @@
 
 Field-by-field answers for the submission form at `claude.ai/directory/manage` -> **Submit new** ->
 **MCP connector**. Requirements and the review checklist: `appkit-mcp/docs/stores.md` (section 1).
-Limits and auth: ADR-0026. Status: draft, not submitted.
+Limits and auth: ADR-0026. Status: form filled in the claude.ai draft on 2026-10-25 (10 tools), awaiting the owner's Submit.
 
 ## Connection
 
@@ -50,7 +50,7 @@ App-Kit gives Claude practical tools for website and content work. They run on A
 
 - SEO audit: seo_audit_fast checks a public page against about 400 technical SEO, performance, structured data and AI-readiness checks. It returns an overall score, scores by group, the failed checks and the five issues that cost the most. Longer audits return a handle, and seo_audit_status returns the result.
 - Text check: text_check measures readability, filler, spam and keyword stuffing, stop phrases and grammar for English or Russian text up to 20,000 characters. It returns pass/fail verdicts and the positions of issues, not copies of your text. The text is not stored.
-- PDF and images: pdf_to_images renders PDF pages to PNG, JPEG or WebP, images_to_pdf combines images into one PDF, and image_convert converts existing images between PNG, JPEG, WebP, BMP, TIFF and GIF. Pass a public file URL, or upload a local file with create_upload. Results are download links that expire in 10 minutes; files are deleted within 15 minutes.
+- Images and PDF: image_compress shrinks images to WebP or AVIF, image_convert converts between PNG, JPEG, WebP, BMP, TIFF and GIF, pdf_to_images renders PDF pages to images, and images_to_pdf combines images into one PDF. Pass a public file URL, or upload a local file with create_upload. Results are download links that expire in 10 minutes; files are deleted within 15 minutes.
 - Usage: quota_status shows what is left of each tool's daily limit.
 
 All tools only read and compute. App-Kit never publishes anything or changes your website, files or accounts. Private network addresses are rejected.
@@ -68,6 +68,7 @@ Connecting signs you in with an App-Kit account (email and password). Usage is r
 | `pdf_to_images` | App-Kit PDF to images | true | false | true |
 | `images_to_pdf` | App-Kit images to PDF | true | false | true |
 | `image_convert` | App-Kit image conversion | true | false | true |
+| `image_compress` | App-Kit image compression (WebP/AVIF) | true | false | true |
 | `conversion_status` | App-Kit conversion status | true | false | false |
 | `create_upload` | App-Kit file upload | false | false | false |
 | `quota_status` | App-Kit usage limits | true | false | false |
