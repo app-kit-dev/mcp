@@ -2,7 +2,7 @@
 
 Field-by-field answers for the submission form at `claude.ai/directory/manage` -> **Submit new** ->
 **MCP connector**. Requirements and the review checklist: `appkit-mcp/docs/stores.md` (section 1).
-Limits and auth: ADR-0026. Status: form filled in the claude.ai draft on 2026-10-25 (10 tools), awaiting the owner's Submit.
+Limits and auth: ADR-0026. Status: submitted 2026-10-25, in review.
 
 ## Connection
 
