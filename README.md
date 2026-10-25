@@ -136,6 +136,27 @@ Open the MCP config from the Cascade MCP settings (`mcp_config.json`) and add a 
 }
 ```
 
+
+#### Gemini CLI
+
+Install as an extension (the repo root has [`gemini-extension.json`](gemini-extension.json)):
+
+```bash
+gemini extensions install https://github.com/app-kit-dev/mcp
+```
+
+or add the server to `~/.gemini/settings.json` (`httpUrl` = Streamable HTTP):
+
+```json
+{
+  "mcpServers": {
+    "app-kit": {
+      "httpUrl": "https://mcp.app-kit.dev/mcp",
+      "headers": { "Authorization": "Bearer mcpf_your_token" }
+    }
+  }
+}
+```
 #### Other clients
 
 Any client that supports remote MCP over Streamable HTTP: URL `https://mcp.app-kit.dev/mcp`,

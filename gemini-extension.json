@@ -1,0 +1,10 @@
+{
+  "name": "app-kit",
+  "version": "0.1.3",
+  "description": "Remote MCP server: website SEO audit (400 checks, 0-100 score), text readability and grammar check, PDF to images and image conversion to WebP/AVIF. Free tier, no sign-up.",
+  "mcpServers": {
+    "app-kit": {
+      "httpUrl": "https://mcp.app-kit.dev/mcp"
+    }
+  }
+}
