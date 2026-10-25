@@ -9,5 +9,9 @@ claude mcp add --transport http app-kit https://mcp.app-kit.dev/mcp
 #   --scope user \
 #   --header "Authorization: Bearer mcpf_your_token"
 
+# With a free App-Kit account (OAuth sign-in in the browser, higher limits):
+# claude mcp add --transport http app-kit https://mcp.app-kit.dev/mcp/account
+# then run /mcp in Claude Code and choose Authenticate for app-kit.
+
 # Check the connection:
 # claude mcp list

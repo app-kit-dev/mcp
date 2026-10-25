@@ -1,0 +1,8 @@
+{
+  "servers": {
+    "app-kit": {
+      "type": "http",
+      "url": "https://mcp.app-kit.dev/mcp/account"
+    }
+  }
+}

@@ -3,6 +3,22 @@
 Claude.ai and Claude Desktop connect to remote MCP servers as **custom connectors**. The connector
 is added once in your Claude account and is then available in both.
 
+## With an App-Kit account (recommended)
+
+1. Open **Customize > Connectors**, click **+**, then **Add custom connector**.
+   On Team and Enterprise plans an owner adds it in **Organization settings > Connectors**.
+2. Fill in:
+   - Name: `App-Kit`
+   - Remote MCP server URL: `https://mcp.app-kit.dev/mcp/account`
+3. Click **Connect**. Claude opens the App-Kit sign-in page: sign in or create a free account
+   (email and password), then approve access for Claude.
+4. Enable the connector in a chat from the tools menu.
+
+You get the account's daily limits; nothing to copy or keep secret. To stop access, disconnect the
+connector; to delete the account, write to hi@wm2.dev.
+
+## Without an account (free token)
+
 1. Get a free token on [app-kit.dev/mcp](https://app-kit.dev/mcp) (one click, no email).
 2. Open **Customize > Connectors**, click **+**, then **Add custom connector**.
    On Team and Enterprise plans an owner adds it in **Organization settings > Connectors**.
