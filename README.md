@@ -137,6 +137,23 @@ Open the MCP config from the Cascade MCP settings (`mcp_config.json`) and add a 
 ```
 
 
+#### Cline
+
+`cline_mcp_settings.json` (MCP Servers > Configure). Set `"type": "streamableHttp"`: without it
+Cline uses the legacy SSE transport. Agent-oriented steps: [llms-install.md](llms-install.md).
+
+```json
+{
+  "mcpServers": {
+    "app-kit": {
+      "type": "streamableHttp",
+      "url": "https://mcp.app-kit.dev/mcp",
+      "headers": { "Authorization": "Bearer mcpf_your_token" }
+    }
+  }
+}
+```
+
 #### Gemini CLI
 
 Install as an extension (the repo root has [`gemini-extension.json`](gemini-extension.json)):
