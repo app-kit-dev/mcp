@@ -102,7 +102,7 @@ Sample files are stable public files on app-kit.dev.
 | # | Prompt | Expected tools | Expected behavior |
 |---|---|---|---|
 | P1 | `Run a quick SEO audit of https://app-kit.dev and tell me the top issues to fix first.` | `seo_audit_fast` (then `seo_audit_status` if a handle is returned) | Returns an overall score, group scores and the top losses; Claude lists the most important fixes. |
-| P2 | `Check this English text for readability, spam and grammar: "Our new app helps small teams plan their week. It is very very easy to use and it is the best app for teams who want to plan there week fast."` | `text_check` (`lang=en`) | Returns pass/fail verdicts with metrics and issue positions (repeated word, "there" vs "their"); Claude explains what to fix. |
+| P2 | `Check this English text for readability, spam and grammar: "Our new app helps small teams plan their week. It is very very easy to use and it is the best app for teams who want to plan there week fast."` | `text_check` (`lang=en`) | Returns pass/fail verdicts, readability and filler metrics and grammar issue positions (for example the repeated "very very"); Claude explains what to fix. |
 | P3 | `Turn pages 1-2 of https://app-kit.dev/seo-audit-sample-report.en.pdf into PNG images.` | `pdf_to_images` (`first_page=1`, `last_page=2`) | Returns two download links (valid 10 minutes) and a preview of page 1. |
 | P4 | `Convert https://app-kit.dev/icon-512.png to WebP.` | `image_convert` (`target_format=webp`) | Returns a download link, the output size and a preview. |
 | P5 | `How many App-Kit SEO audits and text checks do I have left today?` | `quota_status` | Returns the access tier (`L2`) and remaining calls per tool with the reset time (00:00 UTC). |
